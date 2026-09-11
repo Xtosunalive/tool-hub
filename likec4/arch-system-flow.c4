@@ -1,0 +1,77 @@
+// 端到端数据流 C4 图（知识碎片 → 标准文章 → 消费）—— 手写视图，kind 复用 generated.c4 全局规范
+model {
+
+  contributor = person '投稿人' {
+    description '提交知识碎片（原始文档/草稿）'
+  }
+
+  flowSystem = system '架构图系统' {
+    description 'Obsidian Vault 知识图谱管理平台（Plan-B 状态机）'
+
+    flowWeb = container 'Web 控制台' {
+      description 'React + TS + Vite SPA'
+      uploadUi = component '投稿上传' { description '文章准入页 → POST /api/articles/upload' }
+      standardUi = component '标准化处理' { description '文章准入页 → validate/promote/standardization' }
+      approvalUi = component '审批工作区' { description '图谱发布页 → /api/approval/*（状态机）' }
+      reviewUi = component '关系审核' { description '知识审批页 → POST /api/kg/review（直接审批）' }
+      mappingUi = component '文章映射修复' { description '知识审批页 → /api/article-associations/save（直接写回）' }
+      consumeUi = component '消费页面' { description '文档检索/拓扑/影响分析/Schema' }
+    }
+
+    flowApi = container 'API 服务' {
+      description 'Node.js HTTP API（18083）'
+      workflowSvc = component '文章工作流' { description 'upload/validate/promote/standardize + createStandardVersion' }
+      approvalSvc = component '审批状态机' { description 'approval-state-machine（转移表+decisions.jsonl+乐观锁）' }
+      snapshotSvc = component '快照打包' { description 'snapshot-store（复用 createStandardVersion + release-builder）' }
+      reviewSvc = component '关系审批' { description 'POST /api/kg/review（写 review_actions + 更新 master_graph）' }
+      associationSvc = component '映射写回' { description 'POST /api/article-associations/save（复用 service.save）' }
+      consumptionSvc = component '消费服务' { description '文档检索/拓扑/影响分析（ReleaseReader 只读）' }
+    }
+
+    flowVault = external 'Obsidian Vault' {
+      description '唯一事实源'
+      inbox = external '收件箱' { description 'raw/drafts/投稿/' }
+      precleaned = external '候选区' { description 'raw/precleaned/' }
+      standard = external '标准文章' { description 'wiki/entities/*.md（内容哈希命名）' }
+      states = external '审批状态' { description '.anyshare/approval-states.json' }
+      audit = external '审计' { description '.anyshare/decisions.jsonl' }
+      reviewActions = external '关系审计' { description '.anyshare/review_actions.json' }
+      masterGraph = external '图谱' { description '.anyshare/master_graph.json' }
+      schema = external 'Schema' { description '知识库/TheSchema/*.yaml' }
+    }
+  }
+
+  // ── ① 知识碎片 → 投稿 ──
+  contributor -> flowWeb.uploadUi '提交文档'
+  flowWeb.uploadUi -> flowApi.workflowSvc 'POST /api/articles/upload'
+  flowApi.workflowSvc -> flowVault.inbox '写入'
+
+  // ── ② 标准化 ──
+  flowWeb.standardUi -> flowApi.workflowSvc 'validate/promote/standardization'
+  flowApi.workflowSvc -> flowVault.precleaned '提升候选'
+  flowApi.workflowSvc -> flowVault.standard '生成标准文章 + 哈希'
+
+  // ── ③ 审批（状态机）──
+  flowWeb.approvalUi -> flowApi.approvalSvc 'POST /api/approval/:id/transition'
+  flowApi.approvalSvc -> flowVault.states '更新状态'
+  flowApi.approvalSvc -> flowVault.audit '追加审计'
+  flowApi.approvalSvc -> flowApi.snapshotSvc '发布打包'
+  flowApi.snapshotSvc -> flowVault.standard '不可变快照'
+
+  // ── ④ 消费 ──
+  flowWeb.reviewUi -> flowApi.reviewSvc 'POST /api/kg/review'
+  flowApi.reviewSvc -> flowVault.reviewActions '追加审计'
+  flowApi.reviewSvc -> flowVault.masterGraph '更新 reviewStatus'
+  flowWeb.mappingUi -> flowApi.associationSvc 'POST /api/article-associations/save'
+  flowApi.associationSvc -> flowVault.schema '写回 article_associations.yaml'
+  flowWeb.consumeUi -> flowApi.consumptionSvc 'GET /api/**'
+  flowApi.consumptionSvc -> flowVault.standard '读标准文章'
+  flowApi.consumptionSvc -> flowVault.masterGraph '读图谱'
+}
+
+views {
+  view systemFlow of flowSystem {
+    title '知识碎片 → 标准文章 → 消费（端到端数据流）'
+    include flowSystem.*
+  }
+}

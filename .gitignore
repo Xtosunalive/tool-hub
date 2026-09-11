@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# build outputs
+dist/
+likec4/dist/
+likec4/generated.c4
+
+# local credentials / secrets
+credentials.json
+.env
+.env.*
+
+# vendored third-party projects
+next-ai-draw-io/
+
+# runtime data
+logs/
+tasks/
+images/
+*.log
+
+# os / editor
+.DS_Store
+Thumbs.db

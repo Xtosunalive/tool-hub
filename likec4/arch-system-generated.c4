@@ -1,0 +1,149 @@
+// 自动生成于 2026-07-30T07:42:08.845Z
+// 生成器版本 1.0.0
+// 数据源: src/features/ (16), electron/routes/ (18), electron/services/ (63), package.json
+// 警告: 此文件由架构图系统 scripts/generate-likec4-model.mjs 生成，请勿手动编辑
+// 快照复制自 ~/架构图系统-rebuild/likec4/（specification 由 tool-hub generated.c4 统一声明）
+
+model {
+
+  architect = person '架构师' {
+    description '设计与维护知识图谱架构'
+  }
+  knowledgeEngineer = person '知识工程师' {
+    description '管理知识图谱内容与质量'
+  }
+
+  archGraph = system '架构图系统' {
+    description 'Obsidian Vault 知识图谱 Web 管理控制台'
+
+    apiServer = container 'API 服务' {
+      description 'Node.js HTTP API, 18 route handlers, 63 领域服务'
+      admission = component '文章准入' {
+        description '投稿、候选检查、批准和不可变批准版本'
+        admission_routes = component '路由 (3)' {
+          description 'article-workflow-routes, entity-compliance-routes, schema-discovery-routes'
+        }
+        admission_services = component '服务 (20)' {
+          description 'article-admission-policy, article-compliance-service, article-draft-workflow, article-manifest-batch-service, article-manifest-policy, article-manifest-query, article-manifest-service, article-upload-status, article-workflow-service, article-workflow-store, compliance-rule-set-service, document-source-scanner, draft-scan-policy, draft-source-scanner, entity-compliance-body-rules, entity-compliance-frontmatter-rules, entity-compliance-helpers, entity-compliance-service, entity-source-scanner, extract-manifest-reader'
+        }
+      }
+      governance = component '知识治理' {
+        description '问题证据、修改预览、人工裁决、事实源写回和销账'
+        governance_routes = component '路由 (7)' {
+          description 'anomaly-workbench-routes, dependencies-routes, enums-routes, inference-conflict-routes, ontology-routes, property-routes, version-registry-routes'
+        }
+        governance_services = component '服务 (30)' {
+          description 'anomaly-action-adapter, anomaly-workbench-service, change-disposition-candidate-service, change-disposition-service, decision-evidence-service, dependencies-write-service, dependency-impact-preview-service, document-identity, entity-alias-index, entity-relation-patch-service, entity-repair-service, enums-change-preview-service, enums-write-service, formal-document-node, gap-engine, governance-action-store, inference-conflict-store, inference-decision-consumer, inference-engine, inference-ontology, inference-rule-conflicts, node-id-resolver, ontology-write-service, property-governance-service, property-repair-service, review-action-store, review-status-writer, semantic-architecture-service, unmanaged-entity-candidate-service, version-registry-service'
+        }
+      }
+      publication = component '发布管理' {
+        description '批次冻结、隔离暂存、发布门禁和派生数据原子切换'
+        publication_routes = component '路由 (1)' {
+          description 'pipeline-routes'
+        }
+        publication_services = component '服务 (5)' {
+          description 'article-graph-batch-service, master-graph-service, pipeline-run-service, pipeline-state-store, python-bridge'
+        }
+      }
+      analysis = component '架构分析' {
+        description '资产查询、影响分析、版本对比和来源回链'
+        analysis_routes = component '路由 (6)' {
+          description 'architecture-version-routes, article-association-routes, dashboard-routes, kg-routes, obsidian-open-routes, sync-routes'
+        }
+        analysis_services = component '服务 (7)' {
+          description 'architecture-version-service, document-inventory-service, graph-provenance-service, impact-analysis-service, local-operator-context, obsidian-open-service, source-freshness-service'
+        }
+      }
+      shared = component '共享工具' {
+        description 'article-association-service'
+      }
+    }
+
+    webConsole = container 'Web 控制台' {
+      description 'React + TypeScript + Vite SPA, 16 个功能模块'
+      admission_ui = component '文章准入 前端 (5)' {
+        description 'admission, article-workflow, entity-compliance, review, schema-manager'
+      }
+      governance_ui = component '知识治理 前端 (5)' {
+        description 'anomaly-workbench, article-associations, gap-engine, property-gov, relations'
+      }
+      publication_ui = component '发布管理 前端 (2)' {
+        description 'dashboard, publish'
+      }
+      analysis_ui = component '架构分析 前端 (4)' {
+        description 'architecture-version, data-dashboard, document-inventory, impact-analysis'
+      }
+    }
+
+    vault = external 'Obsidian Vault' {
+      description '文件系统知识库: TheSchema + wiki/entities'
+    }
+    react = external 'React 18' {
+      description '18.3.1'
+    }
+    xyflow_react = external 'ReactFlow' {
+      description '12.11.1'
+    }
+    vite = external 'Vite 8' {
+      description '8.1.0'
+    }
+    tailwindcss = external 'Tailwind CSS' {
+      description '4.2.1'
+    }
+    zustand = external 'Zustand' {
+      description '5.0.12'
+    }
+    vitest = external 'Vitest' {
+      description '4.1.9'
+    }
+  }
+
+  // ── 用户交互 ──
+  architect -> webConsole '管理架构'
+  knowledgeEngineer -> webConsole '管理内容'
+
+  // ── 前后端调用 ──
+  webConsole -> apiServer 'HTTP /api/*'
+
+  // ── 后端上下文内部 ──
+  apiServer.admission.admission_routes -> apiServer.admission.admission_services '调用'
+  apiServer.governance.governance_routes -> apiServer.governance.governance_services '调用'
+  apiServer.publication.publication_routes -> apiServer.publication.publication_services '调用'
+  apiServer.analysis.analysis_routes -> apiServer.analysis.analysis_services '调用'
+
+  // ── 前端 → 后端 ──
+  webConsole.admission_ui -> apiServer.admission 'API 调用'
+  webConsole.governance_ui -> apiServer.governance 'API 调用'
+  webConsole.publication_ui -> apiServer.publication 'API 调用'
+  webConsole.analysis_ui -> apiServer.analysis 'API 调用'
+
+  // ── 外部依赖 ──
+  apiServer -> vault 'fs.readFileSync 读取'
+  webConsole -> react '依赖'
+  webConsole -> xyflow_react '渲染拓扑'
+
+}
+
+views {
+
+  view auto_landscape {
+    title '架构图系统 — 自动扫描 (2026-07-30 07:42:08)'
+    include *
+  }
+
+  view auto_containers of archGraph {
+    title '容器视图'
+    include *
+  }
+
+  view auto_api of apiServer {
+    title 'API 服务 — 组件视图'
+    include *
+  }
+
+  view auto_frontend of webConsole {
+    title 'Web 控制台 — 组件视图'
+    include *
+  }
+
+}

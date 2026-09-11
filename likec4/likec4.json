@@ -1,0 +1,45 @@
+{
+  "_stage": "layouted",
+  "projectId": "toolhub",
+  "project": {
+    "id": "toolhub",
+    "title": "做图工具聚合平台"
+  },
+  "specification": {
+    "tags": {},
+    "elements": {
+      "person": {
+        "style": {}
+      },
+      "system": {
+        "style": {}
+      },
+      "container": {
+        "style": {}
+      },
+      "component": {
+        "style": {}
+      },
+      "external": {
+        "style": {}
+      }
+    },
+    "relationships": {},
+    "deployments": {},
+    "customColors": {}
+  },
+  "elements": {},
+  "relations": {},
+  "globals": {
+    "predicates": {},
+    "dynamicPredicates": {},
+    "styles": {}
+  },
+  "views": {},
+  "deployments": {
+    "elements": {},
+    "relations": {}
+  },
+  "imports": {},
+  "manualLayouts": {}
+}

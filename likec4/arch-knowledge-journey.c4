@@ -1,0 +1,75 @@
+// 业务旅程图：一篇知识的生命周期（投稿 → 标准化 → 审批 → 发布 → 消费）
+// 独立模型（前缀 kj 避免跨文件命名冲突）；编号步骤 + 每步状态/门禁/产物 + 失败分支
+model {
+
+  kjContributor = person '投稿人' {
+    description '提交原始知识文档'
+  }
+  kjArchitect = person '架构师' {
+    description '标准化处理 + 审批把关 + 关系审核'
+  }
+  kjReader = person '消费用户' {
+    description '检索 / 浏览 / 分析知识'
+  }
+
+  kjSystem = system '知识生命周期' {
+    description '一篇知识从碎片到正式消费的完整旅程（Plan-B 状态机）'
+
+    kjStep1 = component '① 投稿' {
+      description 'POST /api/articles/upload → 收件箱 raw/drafts/投稿/'
+    }
+    kjStep2 = component '② 标准化' {
+      description '校验 → 提升 → 标准化；ERROR 阻断进待处理问题，WARNING 放行'
+    }
+    kjStep3 = component '③ 待审' {
+      description 'standardize（draft→pending）需真实标准化（formalContentHash 非空，409 拒绝）'
+    }
+    kjStep4 = component '④ 审批' {
+      description 'confirm/reject 带 contentHash 证据绑定（防 TOCTOU）；rejected 可修改重提'
+    }
+    kjStep5 = component '⑤ 发布' {
+      description 'publish → snapshot：打包不可变快照 + current 原子切换'
+    }
+    kjStep6 = component '⑥ 消费' {
+      description '文档检索 / 拓扑 / 关系审核 / 影响分析 / 映射修复 / Schema'
+    }
+
+    kjInbox = external '收件箱' { description 'raw/drafts/投稿/' }
+    kjPrecleaned = external '候选区' { description 'raw/precleaned/' }
+    kjStandard = external '标准文章' { description 'wiki/entities/{id}.md + contentHash' }
+    kjStates = external '审批状态' { description '.anyshare/approval-states.json' }
+    kjAudit = external '审计' { description '.anyshare/decisions.jsonl（append-only）' }
+    kjSnapshot = external '不可变快照' { description 'wiki/articles/{id}/{hash}.md（0o444 只读）' }
+    kjGraph = external '图谱' { description '.anyshare/master_graph.json' }
+  }
+
+  // ── 主旅程 ──
+  kjContributor -> kjSystem.kjStep1 '上传原始文档'
+  kjSystem.kjStep1 -> kjInbox '写入'
+
+  kjSystem.kjStep2 -> kjPrecleaned '提升候选'
+  kjSystem.kjStep2 -> kjStandard '生成标准文章 + 哈希'
+  kjSystem.kjStep2 -> kjPrecleaned 'ERROR 阻断 → 待处理问题'
+
+  kjArchitect -> kjSystem.kjStep3 '选择真实文章'
+  kjSystem.kjStep3 -> kjStates 'draft → pending'
+  kjSystem.kjStep3 -> kjStandard '校验 formalContentHash'
+
+  kjSystem.kjStep4 -> kjAudit '追加决策（approved/rejected + contentHash + decidedBy + decidedAt）'
+  kjSystem.kjStep4 -> kjStates 'pending → approved / rejected'
+
+  kjSystem.kjStep5 -> kjSnapshot '打包不可变快照'
+  kjSystem.kjStep5 -> kjStates 'approved → snapshot（releaseId）'
+
+  kjSystem.kjStep6 -> kjStandard '读标准文章（ReleaseReader）'
+  kjSystem.kjStep6 -> kjGraph '读图谱'
+  kjArchitect -> kjSystem.kjStep6 '关系审批 / 映射修复'
+  kjReader -> kjSystem.kjStep6 '检索 / 浏览'
+}
+
+views {
+  view kjJourney of kjSystem {
+    title '一篇知识的生命周期（投稿 → 标准化 → 审批 → 发布 → 消费）'
+    include kjSystem.*
+  }
+}

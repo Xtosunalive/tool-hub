@@ -1,0 +1,14 @@
+{
+  "name": "mcp-toolhub",
+  "version": "0.1.0",
+  "description": "MCP server bridging DSH to the tool-hub platform API",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "bin": { "mcp-toolhub": "src/index.js" },
+  "scripts": { "start": "node src/index.js" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^3.25.0"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "a_online": [
+    { "name": "draw.io", "desc": "通用流程图/架构图", "url": "https://app.diagrams.net/", "color": "#F08705" },
+    { "name": "Excalidraw", "desc": "手绘风白板", "url": "https://excalidraw.com/", "color": "#6965DB" },
+    { "name": "tldraw", "desc": "强交互白板/画布", "url": "https://www.tldraw.com/", "color": "#4B5563" },
+    { "name": "Mermaid Live", "desc": "流程图/时序图/甘特图 DSL", "url": "https://mermaid.live/", "color": "#FF3670" },
+    { "name": "PlantUML", "desc": "UML/时序/用例图", "url": "https://www.plantuml.com/plantuml", "color": "#21B573" },
+    { "name": "LikeC4 Playground", "desc": "C4 架构图（在线）", "url": "https://playground.likec4.dev/", "color": "#A60EE5" },
+    { "name": "ECharts", "desc": "数据图表", "url": "https://echarts.apache.org/examples/zh/editor.html", "color": "#AA344D" },
+    { "name": "Figma", "desc": "专业 UI/设计", "url": "https://www.figma.com/", "color": "#F24E1E" }
+  ],
+  "b_agent": [
+    { "name": "autoglm-generate-image", "desc": "AutoGLM 文生图", "creds": ["autoglm_token"], "params": { "prompt": "必填，图片描述", "count": "可选，张数" } },
+    { "name": "autoglm-search-image", "desc": "AutoGLM 搜图（找素材）", "creds": ["autoglm_token"], "params": { "query": "必填，搜索关键词" } },
+    { "name": "huashu-wechat-image", "desc": "公众号配图（封面/正文/信息图）", "creds": ["GEMINI_API_KEY"], "params": { "content": "必填，文章内容", "type": "封面|正文|全套|信息图", "style": "可选，风格" } },
+    { "name": "huashu-xhs-image", "desc": "小红书配图（3:4）", "creds": ["GEMINI_API_KEY"], "params": { "content": "必填，笔记内容", "style": "可选，风格" } },
+    { "name": "lark-whiteboard", "desc": "飞书画板（Mermaid/PlantUML/SVG）", "creds": ["lark_cli"], "params": { "code": "必填，DSL代码", "format": "mermaid|plantuml|svg" } },
+    { "name": "json-canvas", "desc": "JSON Canvas 思维导图/画布", "creds": [], "params": { "nodes": "必填，节点描述" } },
+    { "name": "archify", "desc": "架构图/流程图/时序图/数据流/生命周期（自包含交互式 HTML）", "creds": [], "params": { "prompt": "必填，系统/流程/链路描述或仓库路径", "type": "可选 architecture|workflow|sequence|dataflow|lifecycle", "quality": "可选，默认 showcase" } }
+  ],
+  "c_local": [
+    { "name": "LikeC4 CLI", "desc": "C4 架构图（本地起服务，tool-hub 自带）", "command": "cd ~/tool-hub/likec4 && npx likec4 start . --port 5175", "url": "http://localhost:5175", "port": 5175 },
+    { "name": "Obsidian", "desc": "Excalidraw/Mermaid/Canvas 内置", "command": "open -a Obsidian ~/Obsidian\\ Vault", "url": "obsidian://open", "port": 0 },
+    { "name": "Next AI Draw.io", "desc": "AI 对话生成和编辑 draw.io 架构图", "command": "cd ~/tool-hub/next-ai-draw-io && npm run dev", "url": "http://localhost:6002/en", "port": 6002 }
+  ]
+}
+
